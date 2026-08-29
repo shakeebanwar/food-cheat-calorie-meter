@@ -1,0 +1,5 @@
+# Active R&D model set (OpenRouter)
+# deepseek/deepseek-v4-flash-0731 — EXCLUDED (text-only, no image endpoints)
+qwen/qwen3-vl-32b-instruct
+z-ai/glm-5.3-flash
+openai/gpt-5.6-luna
