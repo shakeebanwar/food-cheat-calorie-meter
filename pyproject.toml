@@ -26,3 +26,4 @@ packages = ["foodcheat"]
 
 [tool.uv]
 dev-dependencies = []
+package = false
