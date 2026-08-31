@@ -254,8 +254,8 @@ def main() -> None:
         st.header("Settings")
         mode = st.radio(
             "Mode",
-            ["Single model", "Compare all three", "Smart router (cheap → premium)"],
-            help="Single = one model. Compare = run all three. Router = cheap first, escalate if unsure.",
+            ["Single model", "Compare all four", "Smart router (cheap → premium)"],
+            help="Single = one model. Compare = run all four. Router = cheap first, escalate if unsure.",
         )
         model_key = st.selectbox(
             "Model",
@@ -316,7 +316,7 @@ def main() -> None:
             with st.spinner(f"Analyzing with {MODELS[model_key].label}…"):
                 result = analyze_image(image_path, model_key)
             st.session_state["last_result"] = ("single", result, None)
-        elif mode == "Compare all three":
+        elif mode == "Compare all four":
             results = {}
             for k in MODEL_ORDER:
                 with st.spinner(f"Running {MODELS[k].label}…"):
@@ -329,6 +329,20 @@ def main() -> None:
 
     # Persist / show last analysis under the image
     last = st.session_state.get("last_result")
+
+    # ── Guard: discard stale compare results if MODEL_ORDER has changed ──
+    if last:
+        kind, payload, _ = last
+        if kind == "compare" and isinstance(payload, dict):
+            if set(payload.keys()) != set(MODEL_ORDER):
+                # Old run had different models — clear it so user re-analyzes
+                st.session_state.pop("last_result", None)
+                last = None
+                st.warning(
+                    "⚠️ Model list changed (GPT-4o Mini added). "
+                    "Please click **Analyze** again to run all four models."
+                )
+
     if last:
         kind, payload, _ = last
         if kind == "single":
@@ -339,11 +353,13 @@ def main() -> None:
             tabs = st.tabs([MODELS[k].label for k in MODEL_ORDER])
             for tab, k in zip(tabs, MODEL_ORDER):
                 with tab:
-                    _render_result(payload[k])
+                    _render_result(payload.get(k))
             st.markdown("#### Cost / latency comparison")
             rows = []
             for k in MODEL_ORDER:
-                r = payload[k]
+                r = payload.get(k)
+                if r is None:
+                    continue
                 sec = r.latency_ms / 1000.0
                 rows.append(
                     {

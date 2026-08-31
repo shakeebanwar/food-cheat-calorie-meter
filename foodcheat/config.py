@@ -76,9 +76,17 @@ MODELS: dict[str, ModelSpec] = {
             "(text-only, no image endpoints on OpenRouter)."
         ),
     ),
+    "gpt4o_mini": ModelSpec(
+        id="openai/gpt-4o-mini",
+        label="GPT-4o Mini",
+        provider_hint="OpenAI",
+        input_per_m=0.15,
+        output_per_m=0.60,
+        notes="Affordable OpenAI vision model; good cost/accuracy balance.",
+    ),
 }
 
-MODEL_ORDER = ["qwen", "glm", "luna"]  # cheap → premium for router
+MODEL_ORDER = ["qwen", "glm", "gpt4o_mini", "luna"]  # cheap → premium for router
 
 
 def estimated_cost(prompt_tokens: int, completion_tokens: int, model_key: str) -> float:
